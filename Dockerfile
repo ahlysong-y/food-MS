@@ -70,7 +70,7 @@ RUN composer install --optimize-autoloader --no-dev \
 
 # Multi-stage build: Build static assets
 # This allows us to not include Node within the final container
-FROM node:${NODE_VERSION} as node_modules_go_brrr
+FROM node:22 as node_modules_go_brrr
 
 RUN mkdir /app
 
@@ -96,10 +96,10 @@ RUN if [ -f "vite.config.js" ] || [ -f "vite.config.ts" ]; then \
         pnpm install --frozen-lockfile; \
         pnpm run $ASSET_CMD; \
     elif [ -f "package-lock.json" ]; then \
-        npm install; \
+        npm install --no-audit --no-fund --legacy-peer-deps; \
         npm run $ASSET_CMD; \
     else \
-        npm install; \
+        npm install --no-audit --no-fund --legacy-peer-deps; \
         npm run $ASSET_CMD; \
     fi;
 
