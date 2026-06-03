@@ -3,9 +3,9 @@
         <aside class="w-64 bg-gray-900 text-white flex flex-col shadow-lg">
             <div class="p-6 text-center border-b border-gray-700">
                 <h1 class="text-2xl font-bold text-yellow-400">
-                    <i class="fa-solid fa-utensils mr-2"></i>Food Pro MS
+                    <i class="fa-solid fa-utensils mr-2"></i>Food Management
+                    System
                 </h1>
-                <p class="text-sm text-gray-400 mt-1">ISO Standard 2026</p>
             </div>
 
             <nav

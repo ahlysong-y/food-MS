@@ -141,7 +141,7 @@
                     <div>
                         <label
                             class="block text-sm font-bold text-gray-700 mb-2"
-                            >ប្រាក់ទទួលពីអតិថិជន ($)៖</label
+                            >PRាក់ទទួលពីអតិថិជន ($)៖</label
                         >
                         <input
                             type="number"
@@ -194,6 +194,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import Swal from "sweetalert2"; // បន្ថែមការ Import SweetAlert2 នៅទីនេះ
 
 // ទិន្នន័យសាកល្បង (ថ្ងៃក្រោយទាញពី API)
 const unpaidOrders = ref([
@@ -234,13 +235,21 @@ const changeAmount = computed(() => {
     return parseFloat(amountReceived.value) - selectedOrder.value.total_amount;
 });
 
-// ដំណើរការទូទាត់ប្រាក់
-const processPayment = () => {
+// ដំណើរការទូទាត់ប្រាក់ (ប្តូរទៅជា async)
+const processPayment = async () => {
     if (changeAmount.value < 0) {
-        return alert("ចំនួនប្រាក់មិនគ្រប់គ្រាន់ទេ!");
+        // ប្រើ SweetAlert2 ជំនួស alert() ពេលប្រាក់មិនគ្រប់គ្រាន់
+        Swal.fire({
+            icon: "warning",
+            title: "ទឹកប្រាក់មិនគ្រប់គ្រាន់!",
+            text: "ចំនួនប្រាក់ទទួលពីអតិថិជនមិនទាន់គ្រប់គ្រាន់ឡើយទេ!",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#ef4444",
+        });
+        return;
     }
 
-    // កន្លែងបាញ់ API (ឧ. axios.post('/api/payments/process', ...))
+    // 📝 កន្លែងបាញ់ API (ឧ. axios.post('/api/payments/process', ...))
     console.log("ទូទាត់ជោគជ័យ:", {
         order_id: selectedOrder.value.id,
         amount_paid: parseFloat(amountReceived.value),
@@ -248,9 +257,16 @@ const processPayment = () => {
         change: changeAmount.value,
     });
 
-    alert(`ការទូទាត់ជោគជ័យ! ប្រាក់អាប់: $${changeAmount.value.toFixed(2)}`);
+    // ប្រើ SweetAlert2 ជំនួស alert() ពេលទូទាត់ជោគជ័យ
+    await Swal.fire({
+        icon: "success",
+        title: "ទូទាត់ប្រាក់ជោគជ័យ!",
+        text: `ការទូទាត់ទទួលបានជោគជ័យ! ប្រាក់អាប់ជូនភ្ញៀវ៖ $${changeAmount.value.toFixed(2)}`,
+        confirmButtonText: "យល់ព្រម",
+        confirmButtonColor: "#10b981", // ពណ៌បៃតង
+    });
 
-    // លុបវិក្កយបត្រនោះចេញពីបញ្ជីខាងឆ្វេង
+    // លុបវិក្កយបត្រនោះចេញពីបញ្ជីខាងឆ្វេង (បន្ទាប់ពីចុចប៊ូតុងយល់ព្រមលើស្វីតអាឡឺតរួច)
     unpaidOrders.value = unpaidOrders.value.filter(
         (o) => o.id !== selectedOrder.value.id,
     );

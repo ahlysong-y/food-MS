@@ -6,7 +6,7 @@
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">
                     <i class="fa-solid fa-fire-burner text-orange-500 mr-2"></i>
-                    ផ្ទាំងចុងភៅ (Kitchen Orders)
+                    Kitchen Orders
                 </h2>
                 <p class="text-gray-500 mt-1">
                     បញ្ជីមុខម្ហូបដែលត្រូវចម្អិនជូនភ្ញៀវ
@@ -104,8 +104,9 @@
 
 <script setup>
 import { ref } from "vue";
+import Swal from "sweetalert2"; // បន្ថែមការ Import SweetAlert2 ឱ្យត្រូវនឹង Template
 
-// ទិន្នន័យសាកល្បងសម្រាប់ការកុម្ម៉ង់ (ថ្ងៃក្រោយយើងនឹងទាញពី API /api/orders/cooking)
+// គំរូទិន្នន័យសម្រាប់ការកុម្ម៉ង់នៅក្នុងផ្ទះបាយ (Pending Orders)
 const pendingOrders = ref([
     {
         id: 101,
@@ -127,14 +128,37 @@ const pendingOrders = ref([
     },
 ]);
 
-// មុខងារពេលចុច "ធ្វើម្ហូបរួចរាល់"
-const markAsDone = (orderId) => {
-    // លុបវិក្កយបត្រនោះចេញពីបញ្ជី (ចាត់ទុកថាធ្វើរួច)
-    pendingOrders.value = pendingOrders.value.filter(
-        (order) => order.id !== orderId,
-    );
+// មុខងារពេលចុចប៊ូតុង "ធ្វើម្ហូបរួចរាល់"
+const markAsDone = async (orderId) => {
+    // បង្ហាញផ្ទាំង SweetAlert2 សួរបញ្ជាក់ចុងភៅ
+    const result = await Swal.fire({
+        title: "ម្ហូបធ្វើរួចរាល់?",
+        text: "តើម្ហូបនេះបានចម្អិនរួចរាល់សម្រាប់លើកជូនភ្ញៀវហើយមែនទេ?",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#10b981", // ពណ៌បៃតងបែបផ្ទះបាយ
+        cancelButtonColor: "#6b7280", // ពណ៌ប្រផេះ
+        confirmButtonText: "បាទ/ចាស រួចរាល់",
+        cancelButtonText: "មិនទាន់ទេ",
+    });
 
-    // កន្លែងនេះនឹងត្រូវបាញ់ API ទៅកាន់ Backend ដើម្បីដូរ Status និងអោយ Waiter ដឹងថាម្ហូបឆ្អិនហើយ
-    alert("បញ្ជូនដំណឹងទៅកាន់អ្នករត់តុរួចរាល់!");
+    // បើចុចយល់ព្រម
+    if (result.isConfirmed) {
+        // លុបការកុម្ម៉ង់នោះចេញពីអេក្រង់បង្ហាញ
+        pendingOrders.value = pendingOrders.value.filter(
+            (order) => order.id !== orderId,
+        );
+
+        // 📝 ថ្ងៃក្រោយបងអាចបាញ់ API ទៅប្រាប់ Waiter នៅត្រង់នេះ (ឧ. await api.post(...))
+
+        // លោតផ្ទាំងប្រាប់ថាបានជូនដំណឹងជោគជ័យ
+        Swal.fire({
+            icon: "success",
+            title: "រួចរាល់!",
+            text: "បានជូនដំណឹងទៅអ្នករត់តុរួចរាល់។",
+            showConfirmButton: false,
+            timer: 1500, // បិទផ្ទាំងទៅវិញស្វ័យប្រវត្តក្នុងរយៈពេល ១.៥ វិនាទី
+        });
+    }
 };
 </script>

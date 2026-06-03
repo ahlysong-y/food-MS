@@ -6,7 +6,7 @@
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">
                     <i class="fa-solid fa-boxes-stacked text-blue-500 mr-2"></i>
-                    គ្រប់គ្រងស្តុកគ្រឿងផ្សំ (Inventory)
+                    Inventory
                 </h2>
                 <p class="text-gray-500 mt-1">
                     ពិនិត្យមើល និងបញ្ជូលស្តុកប្រចាំសាខា
@@ -16,7 +16,8 @@
                 @click="showAddForm = !showAddForm"
                 class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-bold transition flex items-center shadow-md"
             >
-                <i class="fa-solid fa-plus mr-2"></i> បញ្ចូលស្តុកថ្មី
+                <i class="fa-solid fa-plus mr-2"></i>
+                {{ showAddForm ? "បិទទម្រង់" : "បញ្ចូលស្តុកថ្មី" }}
             </button>
         </div>
 
@@ -25,7 +26,7 @@
                 class="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col overflow-hidden"
             >
                 <div
-                    class="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 grid grid-cols-4 text-center"
+                    class="p-4 border-b border-gray-100 bg-gray-50 font-bold text-gray-700 grid grid-cols-5 text-center"
                 >
                     <div class="text-left">
                         <i class="fa-solid fa-tag mr-1"></i> ឈ្មោះគ្រឿងផ្សំ
@@ -40,13 +41,14 @@
                     <div>
                         <i class="fa-solid fa-circle-info mr-1"></i> ស្ថានភាព
                     </div>
+                    <div><i class="fa-solid fa-gear mr-1"></i> សកម្មភាព</div>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-4 space-y-3">
                     <div
                         v-for="item in inventoryItems"
                         :key="item.id"
-                        class="grid grid-cols-4 text-center items-center p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition"
+                        class="grid grid-cols-5 text-center items-center p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition"
                     >
                         <div class="text-left font-bold text-gray-800">
                             {{ item.name }}
@@ -66,6 +68,15 @@
                                 class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-bold animate-pulse"
                                 >ជិតអស់ហើយ</span
                             >
+                        </div>
+                        <div>
+                            <button
+                                @click="deleteProduct(item.id)"
+                                class="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition"
+                                title="លុបគ្រឿងផ្សំ"
+                            >
+                                <i class="fa-solid fa-trash-can text-lg"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -90,7 +101,7 @@
                             v-model="form.id"
                             class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 outline-none text-gray-700"
                         >
-                            <option value="null" disabled>
+                            <option :value="null" disabled>
                                 -- សូមជ្រើសរើស --
                             </option>
                             <option
@@ -105,7 +116,7 @@
                     <div>
                         <label
                             class="block text-sm font-bold text-gray-700 mb-2"
-                            >ចំនួនដែលត្រូវបន្ថែម៖</label
+                            >数量ដែលត្រូវបន្ថែម៖</label
                         >
                         <input
                             type="number"
@@ -129,6 +140,7 @@
 
 <script setup>
 import { ref } from "vue";
+import Swal from "sweetalert2";
 
 const showAddForm = ref(false);
 
@@ -145,22 +157,61 @@ const form = ref({ id: null, qty: "" });
 // មុខងាររក្សាទុកស្តុកថ្មី
 const saveStock = () => {
     if (!form.value.id || !form.value.qty) {
-        return alert("សូមបំពេញព័ត៌មានអោយបានគ្រប់គ្រាន់!");
+        Swal.fire({
+            icon: "warning",
+            title: "ព័ត៌មានមិនគ្រប់គ្រាន់!",
+            text: "សូមបំពេញព័ត៌មានអោយបានគ្រប់គ្រាន់!",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#3b82f6",
+        });
+        return;
     }
 
     const item = inventoryItems.value.find((i) => i.id === form.value.id);
     if (item) {
         item.quantity += parseFloat(form.value.qty); // បូកចំនួនស្តុកថ្មីចូលស្តុកចាស់
 
-        // កន្លែងបាញ់ API: axios.post('/api/inventory/add', { ingredient_id: item.id, quantity: form.value.qty })
-        alert(
-            `បានបន្ថែមចំនួន ${form.value.qty} ${item.unit} ទៅក្នុងស្តុក [${item.name}] រួចរាល់!`,
-        );
+        Swal.fire({
+            icon: "success",
+            title: "បន្ថែមស្តុកជោគជ័យ!",
+            text: `បានបន្ថែមចំនួន ${form.value.qty} ${item.unit} ទៅក្នុងស្តុក [${item.name}] រួចរាល់!`,
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#10b981",
+        });
 
         // លុបទិន្នន័យក្នុងប្រអប់ចោលវិញក្រោយ Save រួច
         form.value.id = null;
         form.value.qty = "";
         showAddForm.value = false;
+    }
+};
+
+// មុខងារលុបទំនិញចេញពីស្តុក (ពេលនេះដំណើរការជាមួយប៊ូតុងក្នុង HTML ហើយ)
+const deleteProduct = async (productId) => {
+    const result = await Swal.fire({
+        title: "លុបទំនិញនេះចេញពីស្តុក?",
+        text: "ទិន្នន័យទំនិញនេះនឹងត្រូវបាត់បង់ទាំងស្រុងពីប្រព័ន្ធ!",
+        icon: "error",
+        showCancelButton: true,
+        confirmButtonColor: "#dc2626", // ពណ៌ក្រហមដាច់ខាត
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "បាទ/ចាស លុបចេញ",
+        cancelButtonText: "បោះបង់",
+    });
+
+    if (result.isConfirmed) {
+        // លុបទំនិញចេញពីបញ្ជីបង្ហាញនៅលើអេក្រង់
+        inventoryItems.value = inventoryItems.value.filter(
+            (item) => item.id !== productId,
+        );
+
+        Swal.fire({
+            icon: "success",
+            title: "បានលុប!",
+            text: "ទំនិញត្រូវបានលុបចេញពីស្តុកជោគជ័យ។",
+            showConfirmButton: false,
+            timer: 1500,
+        });
     }
 };
 </script>

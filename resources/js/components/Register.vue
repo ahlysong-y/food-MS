@@ -3,7 +3,7 @@
         class="fixed inset-0 flex items-center justify-center bg-gray-900 z-50 overflow-y-auto py-10"
     >
         <div
-            class="bg-white p-10 rounded-2xl shadow-2xl w-[450px] transform transition-all"
+            class="bg-white p-10 rounded-2xl shadow-2xl w-112.5 transform transition-all"
         >
             <div class="text-center mb-8">
                 <div

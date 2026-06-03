@@ -13,7 +13,7 @@
                         :key="table.id"
                         @click="selectedTable = table.id"
                         :class="[
-                            'px-6 py-3 rounded-lg font-bold transition min-w-[100px]',
+                            'px-6 py-3 rounded-lg font-bold transition min-w-25',
                             selectedTable === table.id
                                 ? 'bg-blue-600 text-white shadow-md'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
@@ -135,8 +135,8 @@
 <script setup>
 import { ref, computed } from "vue";
 import api from "../axios"; // ហៅ Axios ដែលយើងបានរៀបចំមកប្រើ
+import Swal from "sweetalert2"; // បន្ថែមការ Import SweetAlert2
 
-// ... (ទិន្នន័យ tables និង menus ទុកនៅដដែលសិន)...
 const tables = ref([
     { id: 1, name: "T-01" },
     { id: 2, name: "T-02" },
@@ -175,12 +175,20 @@ const decreaseQty = (index) => {
     }
 };
 
-// កែប្រែមុខងារបញ្ជូនការកុម្ម៉ង់ដោយបាញ់ API ទៅកាន់ Laravel ពិតប្រាកដ
+// មុខងារបញ្ជូនការកុម្ម៉ង់ទៅកាន់ Laravel
 const submitOrder = async () => {
-    if (!selectedTable.value) return alert("សូមជ្រើសរើសតុជាមុនសិន!");
+    if (!selectedTable.value) {
+        Swal.fire({
+            icon: "warning",
+            title: "មិនទាន់ជ្រើសរើសតុ!",
+            text: "សូមជ្រើសរើសតុអាហារជាមុនសិន មុននឹងបញ្ជូនការកុម្ម៉ង់!",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#3b82f6",
+        });
+        return;
+    }
 
     try {
-        // រៀបចំទម្រង់ទិន្នន័យអោយត្រូវនឹងតម្រូវការ Backend
         const orderData = {
             dining_table_id: selectedTable.value,
             items: cart.value.map((item) => ({
@@ -189,21 +197,40 @@ const submitOrder = async () => {
             })),
         };
 
-        // បាញ់ POST Request ទៅកាន់ API របស់ Laravel (routes/api.php)
         const response = await api.post("/orders/place", orderData);
 
-        // ប្រសិនបើជោគជ័យ
-        alert("✅ " + response.data.message);
+        Swal.fire({
+            icon: "success",
+            title: "បញ្ជូនជោគជ័យ!",
+            text:
+                response.data.message ||
+                "ការកុម្ម៉ង់ត្រូវបានបញ្ជូនទៅផ្នែកផ្ទះបាយរួចរាល់។",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#10b981",
+        });
 
         // ជម្រះទិន្នន័យចោលវិញក្រោយបញ្ជូនរួច
         cart.value = [];
         selectedTable.value = null;
     } catch (error) {
-        // ប្រសិនបើមានបញ្ហា (ឧទាហរណ៍៖ អត់ទាន់ Login ឬ Network Error)
         if (error.response) {
-            alert("❌ បរាជ័យ៖ " + error.response.data.message);
+            Swal.fire({
+                icon: "error",
+                title: "ការបញ្ជូនបរាជ័យ!",
+                text:
+                    "បរាជ័យ៖ " +
+                    (error.response.data.message || "ទិន្នន័យមិនត្រឹមត្រូវ!"),
+                confirmButtonText: "ព្យាយាមម្តងទៀត",
+                confirmButtonColor: "#ef4444",
+            });
         } else {
-            alert("❌ មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ (Server)!");
+            Swal.fire({
+                icon: "error",
+                title: "បញ្ហាភ្ជាប់បណ្តាញ!",
+                text: "មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ (Server)!",
+                confirmButtonText: "យល់ព្រម",
+                confirmButtonColor: "#ef4444",
+            });
         }
     }
 };

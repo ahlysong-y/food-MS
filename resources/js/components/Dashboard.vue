@@ -26,7 +26,9 @@
                     <p class="text-sm text-gray-500 font-medium mb-1">
                         ចំណូលថ្ងៃនេះ
                     </p>
-                    <p class="text-2xl font-bold text-gray-800">$1,250.00</p>
+                    <p class="text-2xl font-bold text-gray-800">
+                        ${{ dashboardStats.revenue.toFixed(2) }}
+                    </p>
                 </div>
             </div>
 
@@ -43,9 +45,9 @@
                         ការកុម្ម៉ង់សរុប
                     </p>
                     <p class="text-2xl font-bold text-gray-800">
-                        48
-                        <span class="text-xs font-normal text-gray-400"
-                            >វិក្កយបត្រ</span
+                        {{ dashboardStats.totalOrders }}
+                        <span class="text-xs font-normal text-gray-400">
+                            វិក្កយបត្រ</span
                         >
                     </p>
                 </div>
@@ -63,7 +65,10 @@
                     <p class="text-sm text-gray-500 font-medium mb-1">
                         តុមានភ្ញៀវ
                     </p>
-                    <p class="text-2xl font-bold text-gray-800">12 / 20</p>
+                    <p class="text-2xl font-bold text-gray-800">
+                        {{ dashboardStats.occupiedTables }} /
+                        {{ dashboardStats.totalTables }}
+                    </p>
                 </div>
             </div>
 
@@ -80,9 +85,9 @@
                         ស្តុកជិតអស់
                     </p>
                     <p class="text-2xl font-bold text-red-600">
-                        5
-                        <span class="text-xs font-normal text-gray-400"
-                            >មុខ</span
+                        {{ dashboardStats.lowStockCount }}
+                        <span class="text-xs font-normal text-gray-400">
+                            មុខ</span
                         >
                     </p>
                 </div>
@@ -106,14 +111,58 @@
                     >
                 </div>
                 <div class="p-6">
-                    <div class="text-center py-10">
+                    <div
+                        v-if="recentOrders.length === 0"
+                        class="text-center py-10"
+                    >
                         <i
                             class="fa-solid fa-file-invoice text-5xl text-gray-200 mb-4"
                         ></i>
                         <p class="text-gray-500">
-                            ទិន្នន័យការបញ្ជាទិញនឹងបង្ហាញនៅទីនេះពេលភ្ជាប់ API
-                            រួចរាល់។
+                            មិនទាន់មានទិន្នន័យការបញ្ជាទិញនៅឡើយទេ។
                         </p>
+                    </div>
+
+                    <div v-else class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="text-sm font-bold text-gray-500 border-b border-gray-100 pb-2"
+                                >
+                                    <th class="pb-3">លេខវិក្កយបត្រ</th>
+                                    <th class="pb-3">តុលេខ</th>
+                                    <th class="pb-3">ទឹកប្រាក់សរុប</th>
+                                    <th class="pb-3 text-right">ស្ថានភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                <tr
+                                    v-for="order in recentOrders"
+                                    :key="order.id"
+                                    class="text-sm text-gray-700"
+                                >
+                                    <td class="py-3 font-medium text-blue-600">
+                                        #INV-{{ order.id }}
+                                    </td>
+                                    <td class="py-3 font-bold">
+                                        តុ {{ order.table_number }}
+                                    </td>
+                                    <td class="py-3 font-bold text-gray-800">
+                                        ${{ order.total_amount.toFixed(2) }}
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        <span
+                                            :class="[
+                                                'px-2.5 py-1 rounded-full text-xs font-bold',
+                                                order.statusClass,
+                                            ]"
+                                        >
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -129,49 +178,27 @@
                 <div class="p-0">
                     <ul class="divide-y divide-gray-100">
                         <li
+                            v-for="(item, index) in topItems"
+                            :key="item.id"
                             class="flex justify-between items-center p-4 hover:bg-gray-50"
                         >
                             <div class="flex items-center">
                                 <div
-                                    class="w-8 h-8 rounded bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm mr-3"
+                                    :class="[
+                                        'w-8 h-8 rounded flex items-center justify-center font-bold text-sm mr-3',
+                                        item.iconClass,
+                                    ]"
                                 >
-                                    1
+                                    {{ index + 1 }}
                                 </div>
-                                <span class="font-medium text-gray-800"
-                                    >បាយឆាសាច់គោពងទា</span
-                                >
+                                <span class="font-medium text-gray-800">{{
+                                    item.name
+                                }}</span>
                             </div>
-                            <span class="text-sm text-gray-500">24 ចាន</span>
-                        </li>
-                        <li
-                            class="flex justify-between items-center p-4 hover:bg-gray-50"
-                        >
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 rounded bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm mr-3"
-                                >
-                                    2
-                                </div>
-                                <span class="font-medium text-gray-800"
-                                    >ស៊ុបតុមយាំគ្រឿងសមុទ្រ</span
-                                >
-                            </div>
-                            <span class="text-sm text-gray-500">18 ឆ្នាំង</span>
-                        </li>
-                        <li
-                            class="flex justify-between items-center p-4 hover:bg-gray-50"
-                        >
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 rounded bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm mr-3"
-                                >
-                                    3
-                                </div>
-                                <span class="font-medium text-gray-800"
-                                    >កូកាកូឡា (កំប៉ុង)</span
-                                >
-                            </div>
-                            <span class="text-sm text-gray-500">35 កំប៉ុង</span>
+                            <span
+                                class="text-sm text-gray-500 font-bold bg-gray-100 px-2.5 py-1 rounded-lg"
+                                >{{ item.sales }}</span
+                            >
                         </li>
                     </ul>
                 </div>
@@ -183,7 +210,7 @@
 <script setup>
 import { ref } from "vue";
 
-// មុខងារបង្ហាញថ្ងៃខែឆ្នាំបច្ចុប្បន្ន
+// ១. មុខងារបង្ហាញថ្ងៃខែឆ្នាំបច្ចុប្បន្នជាភាសាខ្មែរ
 const dateOptions = {
     weekday: "long",
     year: "numeric",
@@ -192,5 +219,59 @@ const dateOptions = {
 };
 const currentDate = ref(new Date().toLocaleDateString("km-KH", dateOptions));
 
-// (ទៅថ្ងៃមុខ យើងនឹងហៅ API ដើម្បីយកតួលេខពិតប្រាកដមកដាក់ជំនួសតួលេខសាកល្បងនេះ)
+// ២. ទិន្នន័យសង្ខេបនៅលើកាតទាំង ៤ (ទាញចេញជា Refs ដើម្បីងាយស្រួលកែប្រែ)
+const dashboardStats = ref({
+    revenue: 1250.0,
+    totalOrders: 48,
+    occupiedTables: 12,
+    totalTables: 20,
+    lowStockCount: 5,
+});
+
+// ៣. ទិន្នន័យសាកល្បងសម្រាប់ការបញ្ជាទិញថ្មីៗ (ធ្វើឱ្យ Dashboard មានជីវិតរស់រវើក)
+const recentOrders = ref([
+    {
+        id: 101,
+        table_number: "T-01",
+        total_amount: 10.5,
+        status: "រង់ចាំគិតប្រាក់",
+        statusClass: "bg-amber-100 text-amber-700",
+    },
+    {
+        id: 102,
+        table_number: "T-03",
+        total_amount: 12.0,
+        status: "កំពុងធ្វើ",
+        statusClass: "bg-blue-100 text-blue-700",
+    },
+    {
+        id: 105,
+        table_number: "T-02",
+        total_amount: 25.5,
+        status: "បានទូទាត់",
+        statusClass: "bg-green-100 text-green-700",
+    },
+]);
+
+// ៤. ទិន្នន័យសាកល្បងសម្រាប់មុខម្ហូបលក់ដាច់ជាងគេ
+const topItems = ref([
+    {
+        id: 1,
+        name: "បាយឆាសាច់គោពងទា",
+        sales: "24 ចាន",
+        iconClass: "bg-orange-100 text-orange-600",
+    },
+    {
+        id: 2,
+        name: "ស៊ុបតុមយាំគ្រឿងសមុទ្រ",
+        sales: "18 ឆ្នាំង",
+        iconClass: "bg-blue-100 text-blue-600",
+    },
+    {
+        id: 3,
+        name: "កូកាកូឡា (កំប៉ុង)",
+        sales: "35 កំប៉ុង",
+        iconClass: "bg-gray-100 text-gray-600",
+    },
+]);
 </script>
