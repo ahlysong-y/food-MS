@@ -82,11 +82,12 @@
         </div>
     </div>
 </template>
-
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "../axios"; // ហៅ axios ដែលយើងបានរៀបចំ
+// បន្ថែម SweetAlert2 នៅទីនេះ
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const form = ref({ email: "", password: "" });
@@ -103,12 +104,30 @@ const handleLogin = async () => {
         localStorage.setItem("userName", response.data.user.name);
         localStorage.setItem("userRole", response.data.user.role);
 
-        // បញ្ជូនទៅកាន់ទំព័រ POS រួច Refresh Page មួយដងដើម្បីអោយ Sidebar លោតត្រូវ Role
-        router.push("/pos").then(() => {
-            window.location.reload();
+        // លោតប្រាប់ថា Login ជោគជ័យ (ស្រេចចិត្ត អាចដាក់ ឬមិនដាក់ក៏បាន)
+        Swal.fire({
+            icon: "success",
+            title: "ជោគជ័យ!",
+            text: "ការចូលប្រើប្រាស់ទទួលបានជោគជ័យ។",
+            showConfirmButton: false, // លាក់ប៊ូតុង ឱ្យវាលោតបិទខ្លួនឯង
+            timer: 1500, // បិទខ្លួនឯងក្នុងរយៈពេល ១.៥ វិនាទី
         });
+
+        // បញ្ជូនទៅកាន់ទំព័រ POS រួច Refresh Page មួយដងដើម្បីអោយ Sidebar លោតត្រូវ Role
+        setTimeout(() => {
+            router.push("/pos").then(() => {
+                window.location.reload();
+            });
+        }, 1500); // រង់ចាំ ១.៥ វិនាទី ឱ្យផ្ទាំង Alert បិទសិន សឹម Refresh
     } catch (error) {
-        alert("Email or password is incorrect!");
+        // ជំនួស alert() ដោយ SweetAlert2 សម្រាប់ Error
+        Swal.fire({
+            icon: "error", // លោតសញ្ញាខ្វែងពណ៌ក្រហម
+            title: "ចូលមិនជោគជ័យ!",
+            text: "អ៊ីមែល ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ។ សូមព្យាយាមម្តងទៀត។",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#ef4444", // ពណ៌ក្រហម Tailwind
+        });
     } finally {
         isLoading.value = false;
     }

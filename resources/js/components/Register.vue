@@ -107,6 +107,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import api from "../axios";
+import Swal from "sweetalert2"; // បន្ថែមការ Import SweetAlert2 នៅទីនេះ
 
 const router = useRouter();
 const isLoading = ref(false);
@@ -128,16 +129,39 @@ const handleRegister = async () => {
         localStorage.setItem("userName", response.data.user.name);
         localStorage.setItem("userRole", response.data.user.role);
 
-        alert("✅ " + response.data.message);
-
-        router.push("/pos").then(() => {
-            window.location.reload();
+        // ប្រើ SweetAlert2 ជំនួស alert() ពេលជោគជ័យ
+        Swal.fire({
+            icon: "success",
+            title: "ជោគជ័យ!",
+            text: response.data.message || "ចុះឈ្មោះគណនីបានជោគជ័យ!",
+            confirmButtonText: "ចូលទៅកាន់ប្រព័ន្ធ",
+            confirmButtonColor: "#16a34a", // ពណ៌បៃតង
+        }).then((result) => {
+            // រង់ចាំអោយអ្នកប្រើចុចយល់ព្រមសិន ទើបរុញទៅកាន់ទំព័រ POS
+            if (result.isConfirmed) {
+                router.push("/pos").then(() => {
+                    window.location.reload();
+                });
+            }
         });
     } catch (error) {
+        // ប្រើ SweetAlert2 ជំនួស alert() ពេលមាន Error
         if (error.response && error.response.status === 422) {
-            alert("❌ អុីមែលនេះមានគេប្រើរួចហើយ ឬទិន្នន័យមិនត្រឹមត្រូវ!");
+            Swal.fire({
+                icon: "error",
+                title: "បរាជ័យ!",
+                text: "អុីមែលនេះមានគេប្រើរួចហើយ ឬទិន្នន័យមិនត្រឹមត្រូវ!",
+                confirmButtonText: "យល់ព្រម",
+                confirmButtonColor: "#ef4444", // ពណ៌ក្រហម
+            });
         } else {
-            alert("❌ មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server!");
+            Swal.fire({
+                icon: "error",
+                title: "បញ្ហាភ្ជាប់បណ្តាញ!",
+                text: "មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server!",
+                confirmButtonText: "យល់ព្រម",
+                confirmButtonColor: "#ef4444",
+            });
         }
     } finally {
         isLoading.value = false;

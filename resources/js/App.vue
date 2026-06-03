@@ -117,6 +117,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "./axios"; // ហៅ API ដើម្បីប្រើសម្រាប់ Logout
+import Swal from "sweetalert2"; // បន្ថែម SweetAlert2 នៅទីនេះ
 
 const router = useRouter();
 
@@ -131,7 +132,20 @@ onMounted(() => {
 
 // មុខងារចាកចេញពីប្រព័ន្ធពិតប្រាកដ
 const logout = async () => {
-    if (confirm("តើអ្នកពិតជាចង់ចាកចេញមែនទេ?")) {
+    // ប្រើ SweetAlert2 ជំនួស confirm()
+    const result = await Swal.fire({
+        title: "ចាកចេញពីប្រព័ន្ធ?",
+        text: "តើអ្នកពិតជាចង់ចាកចេញពីគណនីនេះមែនទេ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444", // ពណ៌ក្រហម (ឱ្យត្រូវនឹងប៊ូតុងចាកចេញ)
+        cancelButtonColor: "#6b7280", // ពណ៌ប្រផេះ (បោះបង់)
+        confirmButtonText: "បាទ/ចាស ចាកចេញ",
+        cancelButtonText: "ត្រឡប់ក្រោយ",
+    });
+
+    // បើអ្នកប្រើចុច "បាទ/ចាស ចាកចេញ"
+    if (result.isConfirmed) {
         try {
             // បាញ់ API ប្រាប់ម៉ាស៊ីនមេអោយលុប Token នេះចោល
             await api.post("/logout");

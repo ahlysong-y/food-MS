@@ -84,10 +84,11 @@
         </div>
     </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../axios";
+// បន្ថែម SweetAlert2 នៅទីនេះ
+import Swal from "sweetalert2";
 
 const tasks = ref([]);
 const isLoading = ref(true);
@@ -131,17 +132,47 @@ const fetchTasks = async () => {
 
 // មុខងារពេលចុចប៊ូតុង "ធ្វើរួចរាល់"
 const completeTask = async (id) => {
-    if (!confirm("តើអ្នកប្រាកដថាបានធ្វើកិច្ចការនេះរួចរាល់ហើយមែនទេ?")) return;
+    // ប្រើ SweetAlert2 ជំនួស confirm()
+    const result = await Swal.fire({
+        title: "តើអ្នកប្រាកដទេ?",
+        text: "តើអ្នកពិតជាបានបញ្ចប់កិច្ចការនេះហើយមែនទេ?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3b82f6", // ពណ៌ខៀវ Tailwind
+        cancelButtonColor: "#ef4444", // ពណ៌ក្រហម Tailwind
+        confirmButtonText: "បាទ/ចាស ខ្ញុំប្រាកដ!",
+        cancelButtonText: "បោះបង់",
+    });
+
+    // បើចុច "បោះបង់" ឱ្យឈប់ដំណើរការ
+    if (!result.isConfirmed) return;
 
     try {
         // ព្យាយាមបាញ់ API ប្រាប់ Backend ថាធ្វើរួចហើយ
         await api.post(`/tasks/${id}/complete`);
         // លុបកិច្ចការនោះចេញពីអេក្រង់
         tasks.value = tasks.value.filter((task) => task.id !== id);
-        alert("✅ កិច្ចការត្រូវបានបញ្ចប់!");
+
+        // ប្រើ SweetAlert2 ជំនួស alert() ពេលជោគជ័យ
+        Swal.fire({
+            icon: "success",
+            title: "ជោគជ័យ!",
+            text: "កិច្ចការត្រូវបានបញ្ចប់។",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#3b82f6",
+        });
     } catch (error) {
         // ក្នុងករណីសាកល្បង (Mock Data) យើងគ្រាន់តែលុបវាចេញពីអេក្រង់
         tasks.value = tasks.value.filter((task) => task.id !== id);
+
+        // លោតប្រាប់ជោគជ័យដូចគ្នាសម្រាប់ Mock Data
+        Swal.fire({
+            icon: "success",
+            title: "ជោគជ័យ!",
+            text: "កិច្ចការត្រូវបានបញ្ចប់ (Mock Data)។",
+            confirmButtonText: "យល់ព្រម",
+            confirmButtonColor: "#3b82f6",
+        });
     }
 };
 
